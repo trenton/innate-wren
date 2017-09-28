@@ -1,0 +1,25 @@
+doctype html
+html(lang="en")
+  head
+    title=pageTitle
+    //script(type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js')
+    script(type='text/javascript' src='https://pages.runbam.com/hh.js')
+
+  body
+    div
+      h1 Greetings, #{u.displayName} from #{u.provider}
+      h3 #{u.id}
+    div
+      ol
+        each email in u.emails
+          li= email.value
+    
+    form(method='POST' action='https://workersandbox.mturk.com/mturk/externalSubmit')
+      input(name="x")
+      input(id="assignmentId" name="assignmentId" type="hidden")
+      button.btn.btn-primary(type='submit') Done     
+    
+    script.
+      turkSetAssignmentID();
+    
+    a(href='/logoff') Logoff
