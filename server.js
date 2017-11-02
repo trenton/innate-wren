@@ -4,9 +4,8 @@
 var users = {};
 
 var passport = require('passport');
+
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
-
-
 passport.use(new GoogleStrategy({
   clientID: process.env.G_CLIENT_ID,
   clientSecret: process.env.G_CLIENT_SECRET,
@@ -18,12 +17,22 @@ function(token, tokenSecret, profile, cb) {
 }));
 
 var AmazonStrategy = require('passport-amazon').Strategy
-
 passport.use(new AmazonStrategy({
   clientID: process.env.A_CLIENT_ID,
   clientSecret: process.env.A_CLIENT_SECRET,
   callbackURL: 'https://'+process.env.PROJECT_DOMAIN+'.glitch.me/login/amazon/return',
   scope: ['profile']
+},
+function(token, tokenSecret, profile, cb) {
+  return cb(null, profile);
+}));
+
+var CognitoPool001Strategy = require('passport-cognito').Strategy
+passport.use(new CognitoPool001Strategy({
+  userPoolId: '',
+  clientId: '',
+  region: 'us-east-1',
+  callbackURL: 'https://'+process.env.PROJECT_DOMAIN+'.glitch.me/login/cognitopool001/return',
 },
 function(token, tokenSecret, profile, cb) {
   return cb(null, profile);
@@ -63,6 +72,12 @@ app.get('/', function(req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+// awssdk
+app.get('/awssdk', function(req, res) {
+  res.sendFile(__dirname + '/views/awssdk.html');
+});
+
+
 // on clicking "logoff" the cookie is cleared
 app.get('/logoff',
   function(req, res) {
@@ -78,6 +93,8 @@ app.get('/auth/google', passport.authenticate('google'));
 
 app.get('/auth/amazon', passport.authenticate('amazon'));
 
+app.get('/auth/cognitopool001', passport.authenticate('cognito'));
+
 app.get('/login/google/return', 
   passport.authenticate('google', 
     { successRedirect: '/setcookie', failureRedirect: '/' }
@@ -86,6 +103,12 @@ app.get('/login/google/return',
 
 app.get('/login/amazon/return', 
   passport.authenticate('amazon', 
+    { successRedirect: '/setcookie', failureRedirect: '/' }
+  )
+);
+
+app.get('/login/cognitopool001/return', 
+  passport.authenticate('cognito', 
     { successRedirect: '/setcookie', failureRedirect: '/' }
   )
 );

@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>uploads with cognito</title>
+    <link id="favicon" rel="icon" href="https://glitch.com/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.142.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+      .invisible{visibility: hidden}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Cognito-supported file uploads</h1>
+    </header>
+
+    <div sytle="padding: 10px;">
+      <input id="file" type="file" accept="image/*">
+      <button id="go">
+        upload
+      </button>
+      <span id="status" class="invisible" style="background-color: green; color: white">done</span>
+    </div>
+
+    <div style="font-size: small; color: lightgray; padding: 10px">
+    <div id="key"></div>
+    <div id="secret"></div>
+    <div id="token"></div>
+    </div>
+
+    <script>
+      let config = {
+        // config goes here
+      }
+      
+      // Set the region where your identity pool exists (us-east-1, eu-west-1)
+      AWS.config.region = config.region;
+
+      // Configure the credentials provider to use your identity pool
+      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+          IdentityPoolId: config.pool,
+      });
+
+      // Make the call to obtain credentials
+      AWS.config.credentials.get(function(){
+        // Credentials will be available when this function is called.
+        let accessKeyId = AWS.config.credentials.accessKeyId;
+        let secretAccessKey = AWS.config.credentials.secretAccessKey;
+        let sessionToken = AWS.config.credentials.sessionToken;
+
+        $("#key").text(accessKeyId);
+        $("#secret").text(secretAccessKey);
+        $("#token").text(sessionToken);
+      });
+
+      let s3 = new AWS.S3({
+        apiVersion: '2006-03-01',
+        params: {Bucket: config.bucket}
+      });
+
+      do_upload = () => {
+        $("#status").addClass("invisible");
+
+        s3.createPresignedPost({}, function(err, data) {
+          if (err) {
+            console.error('Presigning post data encountered an error', err);
+            alert("failed. check the console logs");
+          } else {
+            console.log('The post data is', data);
+            console.log($("#file"));
+            let file = $("#file").prop('files')[0];
+            
+            let photoKey = "/upload001/" + file.name;
+            s3.upload({
+              Key: photoKey,
+              Body: file,
+              ContentType: file.type,
+              ACL: 'public-read'
+            }, function(err, data) {
+              if (err) {
+                console.log('There was an error uploading: ', err.message);
+              }
+              else{
+                console.log('Successfully uploaded');            
+                $("#status").removeClass("invisible");
+              }
+            });
+            
+          }
+        });
+      }
+      
+      $("#go").on("click", do_upload);
+    </script>
+  </body>
+</html>

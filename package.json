@@ -12,10 +12,12 @@
     "cookie-parser": "^1.4.3",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
+    "pug": "^0.1.0",
     "passport": "^0.3.2",
     "passport-google-oauth20": "^1.0.0",
-    "pug": "^0.1.0",
-    "passport-amazon": "^1.0.0"
+    "passport-amazon": "^1.0.0",
+    "passport-cognito": "^0.1.9",
+    "aws-sdk": "^2.142.0"
   },
   "engines": {
     "node": "6.9.1"
