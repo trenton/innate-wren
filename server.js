@@ -158,6 +158,7 @@ app.get('/success', requireLogin, function(req, res) {
 
 function requireLogin (req, res, next) {
   if (!req.user) {
+    console.log("no req.user");
     res.redirect('/');
   } else {
     next();

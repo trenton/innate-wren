@@ -7,16 +7,27 @@ html(lang="en")
 
   body
     div
-      h1 Greetings, #{u.displayName} #{u.nickname} from #{u.provider}
-      h3 #{u.id} #{u.sub}
-    div
-      if u.emails
-        ol
-        each email in u.emails
-          li= email.value
-      ol
-        li=u.email
-    
+      h1 Here's what we know about you:
+      
+      dl
+        dt id
+        dd #{u.id}
+        dt sub
+        dd #{u.sub}
+        dt displayName
+        dd #{u.displayName}
+        dt nickname
+        dd #{u.nickname}
+        dt provider
+        dd #{u.provider}
+        dt email
+        dd #{u.email}
+        dt emails: 
+          if u.emails
+            ol
+            each email in u.emails
+              li= email.value
+        
     form(method='POST' action='https://workersandbox.mturk.com/mturk/externalSubmit')
       div
         p something to say:
