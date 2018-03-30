@@ -2,22 +2,30 @@ doctype html
 html(lang="en")
   head
     title=pageTitle
-    //script(type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js')
-    script(type='text/javascript' src='https://pages.runbam.com/hh.js')
+    script(type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js')
+    //script(type='text/javascript' src='https://pages.runbam.com/hh.js')
 
   body
     div
-      h1 Greetings, #{u.displayName} from #{u.provider}
-      h3 #{u.id}
+      h1 Greetings, #{u.displayName} #{u.nickname} from #{u.provider}
+      h3 #{u.id} #{u.sub}
     div
-      ol
+      if u.emails
+        ol
         each email in u.emails
           li= email.value
+      ol
+        li=u.email
     
     form(method='POST' action='https://workersandbox.mturk.com/mturk/externalSubmit')
-      input(name="x")
-      input(id="assignmentId" name="assignmentId" type="hidden")
-      button.btn.btn-primary(type='submit') Done     
+      div
+        p something to say:
+        input(name="x")
+      div
+        p assignment id:
+        input(id="assignmentId" name="assignmentId")
+      div
+        button.btn.btn-primary(type='submit') Done     
     
     script.
       turkSetAssignmentID();

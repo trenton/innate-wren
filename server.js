@@ -27,28 +27,47 @@ function(token, tokenSecret, profile, cb) {
   return cb(null, profile);
 }));
 
-var CognitoPool001Strategy = require('passport-cognito').Strategy
-passport.use(new CognitoPool001Strategy({
-  userPoolId: '',
-  clientId: '',
-  region: 'us-east-1',
-  callbackURL: 'https://'+process.env.PROJECT_DOMAIN+'.glitch.me/login/cognitopool001/return',
+var OAuth2CognitoStrategy = require('passport-oauth2-cognito').Strategy
+passport.use(new OAuth2CognitoStrategy({
+  clientDomain: 'https://innate-wren.auth.us-east-1.amazoncognito.com/',
+  clientID: process.env.COGNITO_WREN001_CLIENT_ID,
+  clientSecret: process.env.COGNITO_WREN001_CLIENT_SECRET,
+  region: process.env.COGNITO_WREN001_REGION,
+  callbackURL: 'https://'+process.env.PROJECT_DOMAIN+'.glitch.me/login/cognitowren001/return',
 },
 function(token, tokenSecret, profile, cb) {
+  console.log(profile);
   return cb(null, profile);
 }));
 
-
 passport.serializeUser(function(user, done) {
-  users[user.id] = user;
-  done(null, user.id);
+  console.log(user);
   
+  var the_id = user.id;
+  if('sub' in user) {
+    the_id = user.sub;
+    user.provider=process.env.COGNITO_WREN001_CLIENT_ID;
+  }
+  
+  users[the_id] = user;
+  
+  /*
+  if('sub' in user) {
+    users[user.sub] = user
+  }
+  else {
+    users[user.id] = user;
+  }  
+  */
+  
+  done(null, the_id);
 });
 passport.deserializeUser(function(id, done) {
   console.log("looking up %s", id);  
   var user = users[id];
   done(null, user);
 });
+
 
 // init project
 var express = require('express');
@@ -67,6 +86,27 @@ app.use(expressSession({ secret:'watchingfairies', resave: true, saveUninitializ
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.get('/auth/google', passport.authenticate('google'));
+app.get('/login/google/return', 
+  passport.authenticate('google', 
+    { successRedirect: '/setcookie', failureRedirect: '/' }
+  )
+);
+
+app.get('/auth/amazon', passport.authenticate('amazon'));
+app.get('/login/amazon/return', 
+  passport.authenticate('amazon', 
+    { successRedirect: '/setcookie', failureRedirect: '/' }
+  )
+);
+
+app.get('/auth/cognitowren001', passport.authenticate('oauth2-cognito'));
+app.get('/login/cognitowren001/return', 
+  passport.authenticate('oauth2-cognito', 
+    { successRedirect: '/setcookie', failureRedirect: '/' }
+  )
+);
+
 // index route
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/views/index.html');
@@ -81,7 +121,7 @@ app.get('/awssdk', function(req, res) {
 // on clicking "logoff" the cookie is cleared
 app.get('/logoff',
   function(req, res) {
-    console.log("doing logoff of " + req.user.id);
+    console.log("doing logoff");
     // https://stackoverflow.com/questions/13758207/why-is-passportjs-in-node-not-removing-session-on-logout
     res.clearCookie('connect.sid');
     req.logout();
@@ -89,37 +129,12 @@ app.get('/logoff',
   }
 );
 
-app.get('/auth/google', passport.authenticate('google'));
-
-app.get('/auth/amazon', passport.authenticate('amazon'));
-
-app.get('/auth/cognitopool001', passport.authenticate('cognito'));
-
-app.get('/login/google/return', 
-  passport.authenticate('google', 
-    { successRedirect: '/setcookie', failureRedirect: '/' }
-  )
-);
-
-app.get('/login/amazon/return', 
-  passport.authenticate('amazon', 
-    { successRedirect: '/setcookie', failureRedirect: '/' }
-  )
-);
-
-app.get('/login/cognitopool001/return', 
-  passport.authenticate('cognito', 
-    { successRedirect: '/setcookie', failureRedirect: '/' }
-  )
-);
-
-
-
 // on successful auth, a cookie is set before redirecting
 // to the success view
 app.get('/setcookie', requireLogin,
   function(req, res) {  
-    if(req.user.id) {
+    // :TODO: nasty hack
+    if(req.user.id || req.user.sub) {
       console.log("have user %s", req.user.id);
       res.redirect('/success');
     } else {
