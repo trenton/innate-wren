@@ -4,11 +4,13 @@ html(lang="en")
     title=pageTitle
     script(type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js')
     //script(type='text/javascript' src='https://pages.runbam.com/hh.js')
+    link(rel="stylesheet" type="text/css" href="https://button.glitch.me/css/glitch.css")
+    link(rel="stylesheet" type="text/css" href="https://button.glitch.me/css/button.css")
 
   body
+    h1 Welcome
     div
-      h1 Here's what we know about you:
-      
+      h2 What we know about you:
       dl
         dt id
         dd #{u.id}
@@ -22,23 +24,21 @@ html(lang="en")
         dd #{u.provider}
         dt email
         dd #{u.email}
-        dt emails: 
-          if u.emails
-            ol
-            each email in u.emails
-              li= email.value
-        
-    form(method='POST' action='https://workersandbox.mturk.com/mturk/externalSubmit')
-      div
-        p something to say:
-        input(name="x")
-      div
-        p assignment id:
-        input(id="assignmentId" name="assignmentId")
-      div
-        button.btn.btn-primary(type='submit') Done     
-    
-    script.
-      turkSetAssignmentID();
-    
-    a(href='/logoff') Logoff
+        dt emails:
+        each email in u.emails
+          dd= email.value
+      a(href='/logoff') <b>Logoff</b>
+    div    
+      h2 An MTurk external hit:
+      form(method='POST' action='https://workersandbox.mturk.com/mturk/externalSubmit')
+        div
+          p something to say:
+          input(name="x")
+        div
+          p assignment id:
+          input(id="assignmentId" name="assignmentId")
+        div
+          button.btn.btn-primary(type='submit') Done     
+
+      script.
+        turkSetAssignmentID();
