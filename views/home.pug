@@ -1,0 +1,72 @@
+doctype html
+html(lang="en")
+  head
+    title=pageTitle
+    script(type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js')
+    link(rel="stylesheet" type="text/css" href="https://button.glitch.me/css/glitch.css")
+    link(rel="stylesheet" type="text/css" href="https://button.glitch.me/css/button.css")
+    script(src="https://sdk.amazonaws.com/js/aws-sdk-2.218.1.min.js")
+    script(src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous")
+    // jose.min.js from assets
+    script(src="https://cdn.glitch.com/15205fc5-1254-4883-99e1-556eda44f301%2Fjose.min.js?1522700865983")
+    script(src="https://cdn.glitch.com/15205fc5-1254-4883-99e1-556eda44f301%2Fbase64.min.js?1522701674055")
+    
+    div
+      h2 cognito stuff
+      
+      p Credentials
+      p(id="x") loading
+      p(id="z") loading
+        
+      script.
+        // parse the id token out of the url. #fragments are special and survive redirects. wild.
+        const hash = window.location.hash.substring(1);
+        let hparams = {}
+        hash.split('&').map(hk => { 
+          let temp = hk.split('='); 
+          hparams[temp[0]] = temp[1] 
+        });
+        console.log(hparams);       
+        
+        // https://stackoverflow.com/questions/28100601/decode-url-safe-base64-in-javascript-browser-side
+        $("#z").text(Base64.decode(hparams.id_token));
+        
+        AWS.config.region = '#{aws_region}';
+      
+        let ci = new AWS.CognitoIdentity();
+        let p1 = {
+          AccountId: "#{aws_account}",
+          IdentityPoolId: '#{aws_identity_pool_id}',
+          Logins: {
+            'cognito-idp.#{aws_region}.amazonaws.com/#{aws_user_pool_id}': hparams.id_token,
+          }
+        };
+        
+        ci.getId(p1, function(err, data) {
+          if (err) {
+            $("#x").text("failed to getId: " + err);
+            $("#z").text("n/a");
+            console.error(err, err.stack);
+          }
+          else {
+            console.log(JSON.stringify(data));
+            let p2 = {
+              IdentityId: data.IdentityId,
+              Logins: {
+                'cognito-idp.#{aws_region}.amazonaws.com/#{aws_user_pool_id}': hparams.id_token,
+              }
+            };
+            ci.getCredentialsForIdentity(p2, (err, data) => {
+              if (err) {
+                $("#x").text("failed to getCredentialsForIdentity: " + err);
+                $("#z").text("n/a");
+                console.error(err, err.stack);
+              }
+              else {
+                $("#x").text(JSON.stringify(data.Credentials));
+                console.log(JSON.stringify(data));
+              }
+            });
+          }
+        });
+

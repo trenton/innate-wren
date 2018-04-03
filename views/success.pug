@@ -6,6 +6,8 @@ html(lang="en")
     //script(type='text/javascript' src='https://pages.runbam.com/hh.js')
     link(rel="stylesheet" type="text/css" href="https://button.glitch.me/css/glitch.css")
     link(rel="stylesheet" type="text/css" href="https://button.glitch.me/css/button.css")
+    script(src="https://sdk.amazonaws.com/js/aws-sdk-2.218.1.min.js")
+
 
   body
     h1 Welcome
@@ -16,6 +18,8 @@ html(lang="en")
         dd #{u.id}
         dt sub
         dd #{u.sub}
+        dt token
+        dd #{u.token}
         dt displayName
         dd #{u.displayName}
         dt nickname
@@ -25,9 +29,11 @@ html(lang="en")
         dt email
         dd #{u.email}
         dt emails:
-        each email in u.emails
-          dd= email.value
+        if u.emails
+          each email in u.emails
+            dd= email.value
       a(href='/logoff') <b>Logoff</b>
+
     div    
       h2 An MTurk external hit:
       form(method='POST' action='https://workersandbox.mturk.com/mturk/externalSubmit')
@@ -42,3 +48,36 @@ html(lang="en")
 
       script.
         turkSetAssignmentID();
+
+          // RoleArn: 'arn:aws:iam::645086751203:role/Cognito_wrenid003Auth_Role',
+
+    div
+      h2 cognito stuff
+      script.
+
+
+        AWS.config.region = 'us-east-1';
+      
+        let ci = new AWS.CognitoIdentity();
+        var params = {
+          AccountId: "645086751203",
+          IdentityPoolId: 'us-east-1:465d31f6-b82b-47d8-b29a-048a5bcd5865',
+          Logins: {
+            'cognito-idp.us-east-1.amazonaws.com/us-east-1_exRT8uV5e': "#{u.token}",
+          }
+        };
+        
+        ci.getId(params, function(err, data) {
+          if (err) {
+            console.error(err, err.stack);
+          }
+          else {
+            console.log(JSON.stringify(data));
+          }
+        });
+        
+//        console.log("good_token: " + good_token);
+        
+        //ci.getCredentialsForIdentity
+
+

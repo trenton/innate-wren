@@ -21,7 +21,6 @@ passport.use(new AmazonStrategy({
   clientID: process.env.A_CLIENT_ID,
   clientSecret: process.env.A_CLIENT_SECRET,
   callbackURL: 'https://'+process.env.PROJECT_DOMAIN+'.glitch.me/login/amazon/return',
-  scope: ['profile']
 },
 function(token, tokenSecret, profile, cb) {
   return cb(null, profile);
@@ -29,24 +28,48 @@ function(token, tokenSecret, profile, cb) {
 
 var OAuth2CognitoStrategy = require('passport-oauth2-cognito').Strategy
 passport.use(new OAuth2CognitoStrategy({
-  clientDomain: 'https://innate-wren.auth.us-east-1.amazoncognito.com/',
+  clientDomain: 'https://' + process.env.COGNITO_WREN001_CLIENT_DOMAIN + '/',
   clientID: process.env.COGNITO_WREN001_CLIENT_ID,
   clientSecret: process.env.COGNITO_WREN001_CLIENT_SECRET,
   region: process.env.COGNITO_WREN001_REGION,
   callbackURL: 'https://'+process.env.PROJECT_DOMAIN+'.glitch.me/login/cognitowren001/return',
+  scope: 'openid'
 },
-function(token, tokenSecret, profile, cb) {
-  console.log(profile);
-  return cb(null, profile);
+function(token, tokenSecret, profile, done) {
+  console.log("profile: " + JSON.stringify(profile));
+  console.log("token: " + JSON.stringify(token));
+  console.log("tokenSecret: " + JSON.stringify(tokenSecret));
+  console.log("after");
+  profile.token = token;
+  
+  var AWS = require('aws-sdk');
+  AWS.config.update({region: process.env.REGION});
+  
+  const idp = 'cognito-idp.us-east-1.amazonaws.com/' + process.env.COGNITO_WREN001_POOL_ID;
+
+  let ci = new AWS.CognitoIdentity();
+  var params = {
+    IdentityPoolId: process.env.COGNITO_WREN001_IDENTITY_POOL_ID,
+    Logins: {
+      idp: token,
+    }
+  };
+  ci.getOpenIdTokenForDeveloperIdentity(params, function(err, data) {
+    if (err) console.error(err, err.stack); 
+    else     console.log(data);           
+  });
+  
+  return done(null, profile);
 }));
 
+
 passport.serializeUser(function(user, done) {
-  console.log(user);
+  // console.log("the user: " + JSON.stringify(user));
   
   var the_id = user.id;
   if('sub' in user) {
     the_id = user.sub;
-    user.provider=process.env.COGNITO_WREN001_CLIENT_ID;
+    user.provider = process.env.COGNITO_WREN001_CLIENT_ID;
   }
   
   users[the_id] = user;
@@ -107,6 +130,17 @@ app.get('/login/cognitowren001/return',
   )
 );
 
+app.get('/auth/userpoolland', (req, res) => {
+  console.log("here!!!");
+  
+  console.log(req.url);
+  
+  // validate token
+  
+  res.redirect('/home');
+  
+});
+
 // index route
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/views/index.html');
@@ -152,7 +186,16 @@ app.get('/success.old', requireLogin,
 );
 
 app.get('/success', requireLogin, function(req, res) {
-  res.render("success", {"u": req.user});
+  res.render("success", {"u": req.user, "cognito_pool_id": process.env.COGNITO_WREN001_POOL_ID});
+});
+
+app.get('/home', (req, res) => {
+  res.render("home", {
+    "aws_region": process.env.COGNITO_WREN001_REGION, 
+    "aws_user_pool_id": process.env.COGNITO_WREN001_POOL_ID,
+    "aws_identity_pool_id": process.env.COGNITO_WREN001_IDENTITY_POOL_ID,
+    "aws_account": process.env.COGNITO_WREN001_AWS_ACCOUNT,
+  });
 });
 
 

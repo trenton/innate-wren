@@ -20,21 +20,22 @@
     </header>
 
     <main>
-      <h2>Try login with these oauth providers, using <a href="https://github.com/jaredhanson/passport">Passport</a> on <a href="http://expressjs.com/">Express</a></h2>
+      <h2>Try login with these auth providers, using <a href="https://github.com/jaredhanson/passport">Passport</a> on <a href="http://expressjs.com/">Express</a></h2>
       <p>
         <ol>
           <li><a class="container" href="/auth/google">Google</a></li>
           <li><a class="container" href="/auth/amazon" target="_blank">Amazon</a></li>
-          <li>Cognio user pool <a href="https://innate-wren.auth.us-east-1.amazoncognito.com/login?redirect_uri=https://innate-wren.glitch.me/login/cognitowren001/return&response_type=code&client_id=222n256laqlgpttn95cg6bcavi&state=STATE&scope=openid+profile+aws.cognito.signin.user.admin">cognito-idp:us-east-1:645086751203:userpool/us-east-1_exRT8uV5e</a></li>
+          <li>Cognito user pool (code) <a href="https://innate-wren.auth.us-east-1.amazoncognito.com/login?redirect_uri=https://innate-wren.glitch.me/login/cognitowren001/return&response_type=code&client_id=222n256laqlgpttn95cg6bcavi&state=STATE&scope=openid+profile+aws.cognito.signin.user.admin">cognito-idp:us-east-1:645086751203:userpool/us-east-1_exRT8uV5e</a></li>
           <!--
           <li><a class="container" href="https://ec2-34-213-187-190.us-west-2.compute.amazonaws.com/adfs/ls/IdpInitiatedSignOn.aspx">Log In with Runaway Bamboo AD</a></li>
           <li><a class="container" href="/auth/cognitopool001">Log In with Cognito Pool 001</a></li>
           <li><a class="container" href="/auth/cognitopoolrunbam003">Log In with Cognito Pool Runbam003</a></li>
           <li><a class="container" href="/auth/cognitowren001">Log In with Cognito Pool wren001</a></li>
           -->
-
-      </ol>
+          <li>Cognito user pool (token) <a href="https://innate-wren.auth.us-east-1.amazoncognito.com/login?redirect_uri=https://innate-wren.glitch.me/auth/userpoolland&response_type=token&client_id=222n256laqlgpttn95cg6bcavi&state=STATE&scope=openid+profile">cognito-idp:us-east-1:645086751203:userpool/us-east-1_exRT8uV5e</a></li>
+        </ol>
       </p>
+    
       <!--
       <h2>Direct Cognito pool login</h2>
       <a href="https://innate-wren.auth.us-east-1.amazoncognito.com/login?redirect_uri=https://innate-wren.glitch.me/login/cognitowren001/return&response_type=code&client_id=222n256laqlgpttn95cg6bcavi&state=STATE&scope=openid+profile+aws.cognito.signin.user.admin">on cognito</a>
