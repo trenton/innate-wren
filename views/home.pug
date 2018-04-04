@@ -12,11 +12,21 @@ html(lang="en")
     script(src="https://cdn.glitch.com/15205fc5-1254-4883-99e1-556eda44f301%2Fbase64.min.js?1522701674055")
     
     div
-      h2 cognito stuff
+      h2 welcome
       
-      p Credentials
-      p(id="x") loading
-      p(id="z") loading
+      p credentials
+        pre(id="x").
+          {
+            loading
+            loading
+            loading
+            loading
+          }
+      p id token claims
+        pre(id="z") loading
+      p id token
+        pre(id="zz") loading
+      
         
       script.
         // parse the id token out of the url. #fragments are special and survive redirects. wild.
@@ -28,14 +38,17 @@ html(lang="en")
         });
         console.log(hparams);       
         
+        $("#zz").text(hparams.id_token)
         // https://stackoverflow.com/questions/28100601/decode-url-safe-base64-in-javascript-browser-side
-        $("#z").text(Base64.decode(hparams.id_token));
+        const token_parts = hparams.id_token.split('.')
+        
+        const decoded_id = Base64.decode(token_parts[1] + "===")
+        $("#z").text(JSON.stringify(JSON.parse(decoded_id), null, 2))
         
         AWS.config.region = '#{aws_region}';
       
-        let ci = new AWS.CognitoIdentity();
-        let p1 = {
-          AccountId: "#{aws_account}",
+        const ci = new AWS.CognitoIdentity();
+        const p1 = {
           IdentityPoolId: '#{aws_identity_pool_id}',
           Logins: {
             'cognito-idp.#{aws_region}.amazonaws.com/#{aws_user_pool_id}': hparams.id_token,
@@ -50,7 +63,7 @@ html(lang="en")
           }
           else {
             console.log(JSON.stringify(data));
-            let p2 = {
+            const p2 = {
               IdentityId: data.IdentityId,
               Logins: {
                 'cognito-idp.#{aws_region}.amazonaws.com/#{aws_user_pool_id}': hparams.id_token,
@@ -63,8 +76,8 @@ html(lang="en")
                 console.error(err, err.stack);
               }
               else {
-                $("#x").text(JSON.stringify(data.Credentials));
-                console.log(JSON.stringify(data));
+                $("#x").text(JSON.stringify(data.Credentials, null, 2));
+                console.log(JSON.stringify(data, null, 2));
               }
             });
           }

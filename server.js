@@ -194,7 +194,6 @@ app.get('/home', (req, res) => {
     "aws_region": process.env.COGNITO_WREN001_REGION, 
     "aws_user_pool_id": process.env.COGNITO_WREN001_POOL_ID,
     "aws_identity_pool_id": process.env.COGNITO_WREN001_IDENTITY_POOL_ID,
-    "aws_account": process.env.COGNITO_WREN001_AWS_ACCOUNT,
   });
 });
 
